@@ -106,11 +106,18 @@ class Map:
 
         self.obstacles = {obj.name: obj for obj in self.objects_list}
 
-    def update(self) -> None:
+    def update(self, pause: bool) -> None:
 
         for moving_obs in self.dynamic_obstacles:
-            moving_obs.rect.x += moving_obs.dx
-            moving_obs.rect.y += moving_obs.dy
+            if pause:
+                moving_x_speed = 0
+                moving_y_speed = 0
+            else:
+                moving_x_speed = moving_obs.dx
+                moving_y_speed = moving_obs.dy
+
+            moving_obs.rect.x += moving_x_speed
+            moving_obs.rect.y += moving_y_speed
 
             moving_obs.draw()
 
@@ -118,4 +125,4 @@ class Map:
             obs.draw()
 
         r, g, b = np.random.randint(0, 255, (3,))
-        pygame.draw.rect(self.screen, (r, g, b), self.target, 2)
+        # pygame.draw.rect(self.screen, (r, g, b), self.target, 2)

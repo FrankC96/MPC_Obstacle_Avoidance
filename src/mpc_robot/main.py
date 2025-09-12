@@ -31,7 +31,7 @@ controller = Controller(
     u_guess=0,
     n_pred=3,
     dt=dt,
-    Q=np.diag([20, 20, 1]),
+    Q=np.diag([12, 12, 1]),
     R=np.diag([20, 10]),
     minimize_method="SLSQP",
 )
@@ -39,16 +39,21 @@ controller = Controller(
 # Create a Simulation object to handle the logic
 sim = Simulation(r1, map, controller, screen)
 
+paused: bool = False
 loop: bool = True
 while loop:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             loop = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_p:
+                paused = not paused
+
     screen.fill((30, 30, 30))
 
     r1.update()
-    map.update()
-    sim.update()
+    map.update(paused)
+    sim.update(paused)
 
     pygame.display.flip()
 

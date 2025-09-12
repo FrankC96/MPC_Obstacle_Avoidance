@@ -65,18 +65,19 @@ class Simulation:
 
         return False
 
-    def update(self):
+    def update(self, pause: bool):
         self.robot.halo_color = (0, 255, 0)
         coll: bool = self._check_collisions()
 
         if coll:
             self.robot.set_vel([0, 0])
             self.robot.halo_color = (255, 0, 0)
+        elif pause:
+            self.robot.set_vel([0, 0])
         else:
-            xref = array([*self.map.target.center, 0])
-            mov_obs = array([*self.map.moving_obs1.rect.center]) + 15
+            xref = array([*self.map.moving_obs1.rect.center, 0])
 
-            res = self.controller.optimize(self.robot.state_vec, xref, mov_obs)
+            res = self.controller.optimize(self.robot.state_vec, xref, None)
             u_opt = res["u"][0] / self.robot.dt
 
             self.robot.set_vel(u_opt)

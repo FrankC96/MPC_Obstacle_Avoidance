@@ -4,7 +4,7 @@ import numpy.typing as npt
 from scipy.optimize import minimize, NonlinearConstraint
 
 from dataclasses import dataclass
-from typing import Union, Callable, Optional
+from typing import Union, Callable, Optional, List, Dict
 
 
 @dataclass
@@ -115,7 +115,7 @@ class Controller:
         self,
         x0: npt.NDArray[np.float64],
         xref: npt.NDArray[np.float64],
-        consts: npt.NDArray[np.float64],
+        consts: Optional[npt.NDArray[np.float64]],
     ):
         # dev_vars is used for warmstarting for the next step
         optimizer_dict = {
@@ -137,16 +137,18 @@ class Controller:
         self.X = self.X.flatten(order="F")
         new_objective = lambda x: self.objective(x, xref)
         new_constraints = lambda x: self.constraints(x, x0)
-        new_ineq_constraints = lambda x: self.ineq_constraints(x, consts)
+
+        minimize_constraints: List[Dict] = [{"type": "eq", "fun": new_constraints}]
+
+        if consts:
+            new_ineq_constraints = lambda x: self.ineq_constraints(x, consts)
+            minimize_constraints.append({"type": "ineq", "fun": new_ineq_constraints})
 
         result = minimize(
             new_objective,
             self.X,
             method=self.minimize_method,
-            constraints=[
-                {"type": "eq", "fun": new_constraints},
-                {"type": "ineq", "fun": new_ineq_constraints},
-            ],
+            constraints=minimize_constraints,
         )
 
         optimizer_dict["dec_vars"] = result["x"]
